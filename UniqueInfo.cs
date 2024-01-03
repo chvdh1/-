@@ -2,10 +2,16 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
+using UnityEngine.SceneManagement;
 
-//Jsonë°ì´í„° ì €ì¥ ë° ë¡œë“œ, í”„ë ˆì„ 60 ê³ ì •
+using Firebase;
+using Firebase.Database;
+using System;
+
 public class JData
 {
+    public string nicname;
+
     public int coin;
     public int carrotNum;
     public int skillBtnposint;
@@ -13,6 +19,7 @@ public class JData
     public float bgmSlider;
     public float sfxSlider;
     public int highScore;
+    public int rank;
     public bool carrotUnLack0;
     public bool carrotUnLack1;
     public bool carrotUnLack2;
@@ -23,8 +30,16 @@ public class JData
     public int oneItems1;
     public int oneItems2;
 
+    public int item0;
+    public int item1;
+    public int item2;
+    public int item3;
+    public int item4;
+    public int item5;
+
     public JData(UniqueInfo uniq)
     {
+       
         coin = uniq.coin;
         carrotNum = uniq.carrotNum;
         skillBtnposint = uniq.skillBtnposint;
@@ -40,11 +55,21 @@ public class JData
         oneItems0 = uniq.oneItems[0];
         oneItems1 = uniq.oneItems[1];
         oneItems2 = uniq.oneItems[2];
+        rank = uniq.rank;
+
+        nicname = uniq.nicname;
+        item0 = uniq.item[0];
+        item1 = uniq.item[1];
+        item2 = uniq.item[2];
+        item3 = uniq.item[3];
+        item4 = uniq.item[4];
+        item5 = uniq.item[5];
     }
 }
 public class UniqueInfo : MonoBehaviour
 {
     public static UniqueInfo Unique;
+    public string nicname;
 
     public Audio ad;
     public int coin;
@@ -54,10 +79,23 @@ public class UniqueInfo : MonoBehaviour
     public float bgmSlider;
     public float sfxSlider;
     public int highScore;
-
+    public int rank;
     public bool[] carrotUnLack;
     public int[] oneItems = new int[3];
+    public int[] item = new int[6];
 
+    //Å¾5 ·©Å· ½Ã½ºÅÛ
+    public string[] top5nic = new string[5];
+    public int[] top5score = new int[5];
+
+    public int[] top1items = new int[6];
+    public int[] top2items = new int[6];
+    public int[] top3items = new int[6];
+    public int[] top4items = new int[6];
+    public int[] top5items = new int[6];
+
+    public DatabaseReference database;
+    public LobbyManager lm;
     void Awake()
     {
         if (Unique == null)
@@ -68,9 +106,13 @@ public class UniqueInfo : MonoBehaviour
 
         DontDestroyOnLoad(gameObject);
 
-        Application.targetFrameRate = 60; //ì‹¤í–‰ í”„ë ˆì„ ì†ë„ 60í”„ë ˆì„ìœ¼ë¡œ ê³ ì • ì‹œí‚¤ê¸°.. ì½”ë“œ
+        Application.targetFrameRate = 60; //½ÇÇà ÇÁ·¹ÀÓ ¼Óµµ 60ÇÁ·¹ÀÓÀ¸·Î °íÁ¤ ½ÃÅ°±â.. ÄÚµå
         QualitySettings.vSyncCount = 0;
-        //ëª¨ë‹ˆí„° ì£¼ì‚¬ìœ¨(í”Œë ˆì„ìœ¨)ì´ ë‹¤ë¥¸ ì»´í“¨í„°ì¼ ê²½ìš° ìºë¦­í„° ì¡°ì‘ì‹œ ë¹ ë¥´ê²Œ ì›€ì§ì¼ ìˆ˜ ìˆë‹¤.
+        //¸ğ´ÏÅÍ ÁÖ»çÀ²(ÇÃ·¹ÀÓÀ²)ÀÌ ´Ù¸¥ ÄÄÇ»ÅÍÀÏ °æ¿ì Ä³¸¯ÅÍ Á¶ÀÛ½Ã ºü¸£°Ô ¿òÁ÷ÀÏ ¼ö ÀÖ´Ù.
+
+
+        //µ¥ÀÌÅÍ¸¦ ¾²·Á¸é DatabaseReference ÀÇ ÀÎ½ºÅÏ½º°¡ ÇÊ¿ä
+        database = FirebaseDatabase.DefaultInstance.RootReference;
 
         carrotUnLack[0] = true;
 
@@ -81,10 +123,18 @@ public class UniqueInfo : MonoBehaviour
 
         string fileName = Path.Combine(Application.persistentDataPath + "/Data.json");
         if (!File.Exists(fileName))
-            SaveToJson();
+        {
+            lm.Nicname();
+            //SaveToJson();
+        }
         else
+        {
             LoadFromJson();
+            lm.lobbyNicname.text = nicname;
+        }
+          
     }
+    
 
     public void SaveToJson()
     {
@@ -97,14 +147,17 @@ public class UniqueInfo : MonoBehaviour
         JData data = new JData(Unique);
         string json = JsonUtility.ToJson(data);
 
-        // ì™„ì„±ëœ json string ë¬¸ìì—´ì„ 8ë¹„íŠ¸ ë¶€í˜¸ì—†ëŠ” ì •ìˆ˜ë¡œ ë³€í™˜
+        // ¿Ï¼ºµÈ json string ¹®ÀÚ¿­À» 8ºñÆ® ºÎÈ£¾ø´Â Á¤¼ö·Î º¯È¯
         byte[] bytes = System.Text.Encoding.UTF8.GetBytes(json);
 
-        // ë³€í™˜ëœ ë°”ì´íŠ¸ë°°ì—´ì„ base-64 ì¸ì½”ë”©ëœ ë¬¸ìì—´ë¡œ ë³€í™˜
+        // º¯È¯µÈ ¹ÙÀÌÆ®¹è¿­À» base-64 ÀÎÄÚµùµÈ ¹®ÀÚ¿­·Î º¯È¯
         string encodedJson = System.Convert.ToBase64String(bytes);
 
-        // ë³€í™˜ëœ ê°’ì„ ì €ì¥
+        // º¯È¯µÈ °ªÀ» ÀúÀå
         File.WriteAllText(fileName, encodedJson);
+
+        //DatabaseReference º¯¼ö¿¡ userId¸¦ ÀÚ½ÄÀ¸·Î º¯È¯µÈ JSON ÆÄÀÏÀ» ¾÷·Îµå => ¼­¹ö¿¡ ÀúÀå
+        database.Child("User Information").Child(nicname).SetRawJsonValueAsync(json);
     }
     public void LoadFromJson()
     {
@@ -112,13 +165,13 @@ public class UniqueInfo : MonoBehaviour
         Debug.Log("LoadFromJson : "+fileName);
         if (File.Exists(fileName))
         {
-            // jsonìœ¼ë¡œ ì €ì¥ëœ ë¬¸ìì—´ì„ ë¡œë“œí•œë‹¤.
+            // jsonÀ¸·Î ÀúÀåµÈ ¹®ÀÚ¿­À» ·ÎµåÇÑ´Ù.
             string jsonFromFile = File.ReadAllText(fileName);
 
-            // ì½ì–´ì˜¨ base-64 ì¸ì½”ë”© ë¬¸ìì—´ì„ ë°”ì´íŠ¸ë°°ì—´ë¡œ ë³€í™˜
+            // ÀĞ¾î¿Â base-64 ÀÎÄÚµù ¹®ÀÚ¿­À» ¹ÙÀÌÆ®¹è¿­·Î º¯È¯
             byte[] bytes = System.Convert.FromBase64String(jsonFromFile);
 
-            // 8ë¹„íŠ¸ ë¶€í˜¸ì—†ëŠ” ì •ìˆ˜ë¥¼ json ë¬¸ìì—´ë¡œ ë³€í™˜
+            // 8ºñÆ® ºÎÈ£¾ø´Â Á¤¼ö¸¦ json ¹®ÀÚ¿­·Î º¯È¯
             string decodedJson = System.Text.Encoding.UTF8.GetString(bytes);
 
             JData data = JsonUtility.FromJson<JData>(decodedJson);
@@ -141,7 +194,198 @@ public class UniqueInfo : MonoBehaviour
             sfxSlider = data.sfxSlider;
 
             highScore = data.highScore;
+
+            nicname = data.nicname;
+            rank = data.rank;
+            item[0] = data.item0;
+            item[1] = data.item1;
+            item[2] = data.item2;
+            item[3] = data.item3;
+            item[4] = data.item4;
+            item[5] = data.item5;
         }
+    }
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.K))
+            Top5RankCK();
+    }
+
+
+    public void DatabaseLoad(string nicname1)
+    {
+        //databaseÀÇ ÀÚ½Ä(userId)¸¦ task·Î ¹ŞÀ½
+        database.Child("User Information").Child(nicname1).GetValueAsync().ContinueWith(task =>
+        {
+            if (task.IsFaulted)
+                Debug.Log("error");
+            //task°¡ ¼º°øÀûÀÌ¸é
+            else if (task.IsCompleted)
+            {
+                //DataSnapshot º¯¼ö¸¦ ¼±¾ğÇÏ¿© taskÀÇ °á°ú °ªÀ» ¹ŞÀ½
+                DataSnapshot snapshot = task.Result;
+             
+                //snapshotÀÇ ÀÚ½Ä °³¼ö¸¦ È®ÀÎ
+                Debug.Log(snapshot.ChildrenCount);
+
+                //snapshotÀÇ ÀÚ½ÄÀÇ Á¤º¸¸¦ °¡Á®¿Í ´ëÀÔ
+                coin = int.Parse(snapshot.Child("coin").Value.ToString()); //¹®ÀÚÇü¿ï intÇüÀ¸·Î º¯È¯
+               
+
+                carrotNum = int.Parse(snapshot.Child("carrotNum").Value.ToString());
+                skillBtnposint = int.Parse(snapshot.Child("skillBtnposint").Value.ToString());
+                carrotUnLack[1] = snapshot.Child("carrotUnLack1").Value.ToString() == "True" ? true : false;
+                carrotUnLack[2] = snapshot.Child("carrotUnLack2").Value.ToString() == "True" ? true : false; 
+                carrotUnLack[3] = snapshot.Child("carrotUnLack3").Value.ToString() == "True" ? true : false; 
+                carrotUnLack[4] = snapshot.Child("carrotUnLack4").Value.ToString() == "True" ? true : false;
+
+                oneItems[0] = int.Parse(snapshot.Child("oneItems0").Value.ToString());
+                oneItems[1] = int.Parse(snapshot.Child("oneItems1").Value.ToString());
+                oneItems[2] = int.Parse(snapshot.Child("oneItems2").Value.ToString());
+
+                allSlider = float.Parse(snapshot.Child("allSlider").Value.ToString());
+                bgmSlider = float.Parse(snapshot.Child("bgmSlider").Value.ToString());
+                sfxSlider = float.Parse(snapshot.Child("sfxSlider").Value.ToString());
+
+                nicname = snapshot.Child("nicname").Value.ToString();
+                highScore = int.Parse(snapshot.Child("highScore").Value.ToString());
+
+                rank = int.Parse(snapshot.Child("rank").Value.ToString());
+                item[0] = int.Parse(snapshot.Child("item0").Value.ToString());
+                item[1] = int.Parse(snapshot.Child("item1").Value.ToString());
+                item[2] = int.Parse(snapshot.Child("item2").Value.ToString());
+                item[3] = int.Parse(snapshot.Child("item3").Value.ToString());
+                item[4] = int.Parse(snapshot.Child("item4").Value.ToString());
+                item[5] = int.Parse(snapshot.Child("item5").Value.ToString());
+
+                Debug.Log("·Îµå ¼º°ø");
+            }
+        });
+
+       
+
+    }
+
+    public void loadNicCK(string nic)
+    {
+        database.Child("User Information").GetValueAsync().ContinueWith(task =>
+        {
+            if (task.IsFaulted)
+                Debug.Log("error");
+            //task°¡ ¼º°øÀûÀÌ¸é
+            else if (task.IsCompleted)
+            {
+                //DataSnapshot º¯¼ö¸¦ ¼±¾ğÇÏ¿© taskÀÇ °á°ú °ªÀ» ¹ŞÀ½
+                DataSnapshot snapshot = task.Result;
+
+                //snapshotÀÇ ÀÚ½Ä °³¼ö¸¦ È®ÀÎ
+                Debug.Log(snapshot.ChildrenCount);
+
+                Debug.Log(snapshot.HasChild(nic));
+                if (snapshot.HasChild(nic))
+                    DatabaseLoad(nic);
+            }
+        });
+
+        
+    }
+
+    public void CrateNicCK(string nic)
+    {
+        database.Child("User Information").GetValueAsync().ContinueWith(task =>
+        {
+            if (task.IsFaulted)
+                Debug.Log("error");
+            //task°¡ ¼º°øÀûÀÌ¸é
+            else if (task.IsCompleted)
+            {
+                //DataSnapshot º¯¼ö¸¦ ¼±¾ğÇÏ¿© taskÀÇ °á°ú °ªÀ» ¹ŞÀ½
+                DataSnapshot snapshot = task.Result;
+
+                //snapshotÀÇ ÀÚ½Ä °³¼ö¸¦ È®ÀÎ
+                Debug.Log(snapshot.ChildrenCount);
+
+                Debug.Log(snapshot.HasChild(nic));
+                if (!snapshot.HasChild(nic))
+                    nicname = nic;
+            }
+        });
+    }
+
+
+    public void Top5RankCK()
+    {
+        FirebaseDatabase.DefaultInstance.GetReference("User Information").OrderByChild("highScore").GetValueAsync().ContinueWith(task =>
+        {
+            if (task.IsFaulted)
+                Debug.Log("error");
+            //task°¡ ¼º°øÀûÀÌ¸é
+            else if (task.IsCompleted)
+            {
+                DataSnapshot snapshot = task.Result;
+
+                int drank = (int)snapshot.ChildrenCount;
+                foreach (DataSnapshot data in snapshot.Children)
+                {
+                   
+                    if(data.Child("nicname").Value.ToString() == nicname)
+                    {
+                        rank = drank;
+                        Debug.Log(data.Child("nicname").Value + " : " + data.Child("highScore").Value+ " rank : "+ drank);
+                    }
+                    if(drank < 6)
+                    {
+                        Debug.Log(data.Child("nicname").Value + " : " + data.Child("highScore").Value + " rank : " + drank);
+                        top5nic[drank-1] = data.Child("nicname").Value.ToString();
+                        top5score[drank-1] = int.Parse(data.Child("highScore").Value.ToString());
+                        switch (drank)
+                        {
+                            case 1:
+                                top1items[0] = int.Parse(data.Child("item0").Value.ToString());
+                                top1items[1] = int.Parse(data.Child("item1").Value.ToString());
+                                top1items[2] = int.Parse(data.Child("item2").Value.ToString());
+                                top1items[3] = int.Parse(data.Child("item3").Value.ToString());
+                                top1items[4] = int.Parse(data.Child("item4").Value.ToString());
+                                top1items[5] = int.Parse(data.Child("item5").Value.ToString());
+                                break;
+                            case 2:
+                                top2items[0] = int.Parse(data.Child("item0").Value.ToString());
+                                top2items[1] = int.Parse(data.Child("item1").Value.ToString());
+                                top2items[2] = int.Parse(data.Child("item2").Value.ToString());
+                                top2items[3] = int.Parse(data.Child("item3").Value.ToString());
+                                top2items[4] = int.Parse(data.Child("item4").Value.ToString());
+                                top2items[5] = int.Parse(data.Child("item5").Value.ToString());
+                                break;
+                            case 3:
+                                top3items[0] = int.Parse(data.Child("item0").Value.ToString());
+                                top3items[1] = int.Parse(data.Child("item1").Value.ToString());
+                                top3items[2] = int.Parse(data.Child("item2").Value.ToString());
+                                top3items[3] = int.Parse(data.Child("item3").Value.ToString());
+                                top3items[4] = int.Parse(data.Child("item4").Value.ToString());
+                                top3items[5] = int.Parse(data.Child("item5").Value.ToString());
+                                break;
+                            case 4:
+                                top4items[0] = int.Parse(data.Child("item0").Value.ToString());
+                                top4items[1] = int.Parse(data.Child("item1").Value.ToString());
+                                top4items[2] = int.Parse(data.Child("item2").Value.ToString());
+                                top4items[3] = int.Parse(data.Child("item3").Value.ToString());
+                                top4items[4] = int.Parse(data.Child("item4").Value.ToString());
+                                top4items[5] = int.Parse(data.Child("item5").Value.ToString());
+                                break;
+                            case 5:
+                                top5items[0] = int.Parse(data.Child("item0").Value.ToString());
+                                top5items[1] = int.Parse(data.Child("item1").Value.ToString());
+                                top5items[2] = int.Parse(data.Child("item2").Value.ToString());
+                                top5items[3] = int.Parse(data.Child("item3").Value.ToString());
+                                top5items[4] = int.Parse(data.Child("item4").Value.ToString());
+                                top5items[5] = int.Parse(data.Child("item5").Value.ToString());
+                                break;
+                        }
+                    }
+                    drank -= 1;
+                }
+            }
+        });
     }
 }
 
