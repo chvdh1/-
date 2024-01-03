@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using UnityEngine;
 
-
+//Jsonë°ì´í„° ì €ì¥ ë° ë¡œë“œ, í”„ë ˆì„ 60 ê³ ì •
 public class JData
 {
     public int coin;
@@ -68,9 +68,9 @@ public class UniqueInfo : MonoBehaviour
 
         DontDestroyOnLoad(gameObject);
 
-        Application.targetFrameRate = 60; //½ÇÇà ÇÁ·¹ÀÓ ¼Óµµ 60ÇÁ·¹ÀÓÀ¸·Î °íÁ¤ ½ÃÅ°±â.. ÄÚµå
+        Application.targetFrameRate = 60; //ì‹¤í–‰ í”„ë ˆì„ ì†ë„ 60í”„ë ˆì„ìœ¼ë¡œ ê³ ì • ì‹œí‚¤ê¸°.. ì½”ë“œ
         QualitySettings.vSyncCount = 0;
-        //¸ğ´ÏÅÍ ÁÖ»çÀ²(ÇÃ·¹ÀÓÀ²)ÀÌ ´Ù¸¥ ÄÄÇ»ÅÍÀÏ °æ¿ì Ä³¸¯ÅÍ Á¶ÀÛ½Ã ºü¸£°Ô ¿òÁ÷ÀÏ ¼ö ÀÖ´Ù.
+        //ëª¨ë‹ˆí„° ì£¼ì‚¬ìœ¨(í”Œë ˆì„ìœ¨)ì´ ë‹¤ë¥¸ ì»´í“¨í„°ì¼ ê²½ìš° ìºë¦­í„° ì¡°ì‘ì‹œ ë¹ ë¥´ê²Œ ì›€ì§ì¼ ìˆ˜ ìˆë‹¤.
 
         carrotUnLack[0] = true;
 
@@ -97,13 +97,13 @@ public class UniqueInfo : MonoBehaviour
         JData data = new JData(Unique);
         string json = JsonUtility.ToJson(data);
 
-        // ¿Ï¼ºµÈ json string ¹®ÀÚ¿­À» 8ºñÆ® ºÎÈ£¾ø´Â Á¤¼ö·Î º¯È¯
+        // ì™„ì„±ëœ json string ë¬¸ìì—´ì„ 8ë¹„íŠ¸ ë¶€í˜¸ì—†ëŠ” ì •ìˆ˜ë¡œ ë³€í™˜
         byte[] bytes = System.Text.Encoding.UTF8.GetBytes(json);
 
-        // º¯È¯µÈ ¹ÙÀÌÆ®¹è¿­À» base-64 ÀÎÄÚµùµÈ ¹®ÀÚ¿­·Î º¯È¯
+        // ë³€í™˜ëœ ë°”ì´íŠ¸ë°°ì—´ì„ base-64 ì¸ì½”ë”©ëœ ë¬¸ìì—´ë¡œ ë³€í™˜
         string encodedJson = System.Convert.ToBase64String(bytes);
 
-        // º¯È¯µÈ °ªÀ» ÀúÀå
+        // ë³€í™˜ëœ ê°’ì„ ì €ì¥
         File.WriteAllText(fileName, encodedJson);
     }
     public void LoadFromJson()
@@ -112,13 +112,13 @@ public class UniqueInfo : MonoBehaviour
         Debug.Log("LoadFromJson : "+fileName);
         if (File.Exists(fileName))
         {
-            // jsonÀ¸·Î ÀúÀåµÈ ¹®ÀÚ¿­À» ·ÎµåÇÑ´Ù.
+            // jsonìœ¼ë¡œ ì €ì¥ëœ ë¬¸ìì—´ì„ ë¡œë“œí•œë‹¤.
             string jsonFromFile = File.ReadAllText(fileName);
 
-            // ÀĞ¾î¿Â base-64 ÀÎÄÚµù ¹®ÀÚ¿­À» ¹ÙÀÌÆ®¹è¿­·Î º¯È¯
+            // ì½ì–´ì˜¨ base-64 ì¸ì½”ë”© ë¬¸ìì—´ì„ ë°”ì´íŠ¸ë°°ì—´ë¡œ ë³€í™˜
             byte[] bytes = System.Convert.FromBase64String(jsonFromFile);
 
-            // 8ºñÆ® ºÎÈ£¾ø´Â Á¤¼ö¸¦ json ¹®ÀÚ¿­·Î º¯È¯
+            // 8ë¹„íŠ¸ ë¶€í˜¸ì—†ëŠ” ì •ìˆ˜ë¥¼ json ë¬¸ìì—´ë¡œ ë³€í™˜
             string decodedJson = System.Text.Encoding.UTF8.GetString(bytes);
 
             JData data = JsonUtility.FromJson<JData>(decodedJson);
