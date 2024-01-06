@@ -1,0 +1,71 @@
+오류 내용
+CommandInvokationFailure: Gradle build failed.
+ 
+해결 방법
+
+C:\Users\사용자\.gradle\caches 내부 파일 삭제
+C:\Users\사용자\AppData\LocalLow\Unity 내부 파일 삭제
+
+-------------------------------------------------------------------
+오류 내용
+androidx.privacysandbox.ads.ads-adservices-java-1.0.0-beta05:' requires 'compileSdkVersion' to be set to 33 or higher.
+     Compilation target for module ':launcher' is 'android-32'
+
+이런식 혹은
+
+WARNING:We recommend using a newer Android Gradle plugin to use compileSdk = 33
+
+This Android Gradle plugin (7.1.2) was tested up to compileSdk = 32
+
+This warning can be suppressed by adding
+    android.suppressUnsupportedCompileSdk=33
+to this project's gradle.properties
+
+
+해결 방법
+ Android Gradle plugin과 Gradle의 버전이 
+해당 "compileSdk"( = 33)와 맞는 유니티 에디터를 설치해서 빌드하면 된다.
+
+-------------------------------------------------------------------------------
+
+Please specify a namespace for the generated R and BuildConfig classes via android.namespace in the module's build.gradle file like so:
+           
+           android {
+               namespace 'com.example.namespace'
+           }
+
+이건
+
+"launcherTemplate"
+
+파일에
+<namespace 'com.example.namespace'>를
+"android " 안에 넣으면 된다.
+
+
+
+
+---------------------------------------------------
+
+This Android Gradle plugin (7.2.0) was tested up to compileSdk = 32
+
+This warning can be suppressed by adding
+    android.suppressUnsupportedCompileSdk=33
+to this project's gradle.properties
+
+The build will continue, but you are strongly encouraged to update your project to
+use a newer Android Gradle Plugin that has been tested with compileSdk = 33
+
+이런 오류가 뜬다면
+
+"baseProjectTemplate"의
+
+id 'com.android.application' version '7.2.2' apply false
+
+    id 'com.android.library' version '7.2.2' apply false
+
+의
+ '7.2.2'를 변경해주면 된다.
+
+
+
