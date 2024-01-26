@@ -1,11 +1,24 @@
 오류 내용
 CommandInvokationFailure: Gradle build failed.
  
-해결 방법
+해결 될 수도있음.
 
 C:\Users\사용자\.gradle\caches 내부 파일 삭제
 C:\Users\사용자\AppData\LocalLow\Unity 내부 파일 삭제
+---------------------------------------------------------------------
+Both template and disabled template exists. This is not allowed, please fix manually on the file system.
+Template: 'Assets\Plugins\Android\settingsTemplate.gradle', disabled template: 'Assets\Plugins\Android\settingsTemplate.gradle.DISABLED'
+UnityEngine.GUIUtility:ProcessEvent (int,intptr,bool&)
 
+Assets\Plugins\Android\settingsTemplate.gradle.DISABLED 파일을 삭제.
+
+--------------------------------------------------------------------
+Modifying Android project files failed with output:
+System.MemberAccessException: Cannot access property ProjectLevelBuildGradle because template is used for the underlying file.
+Remove "Custom Base Gradle Template" template in the player settings to use this property
+
+
+Custom Base Gradle Template 체크 해제.
 -------------------------------------------------------------------
 오류 내용
 androidx.privacysandbox.ads.ads-adservices-java-1.0.0-beta05:' requires 'compileSdkVersion' to be set to 33 or higher.
@@ -42,9 +55,6 @@ Please specify a namespace for the generated R and BuildConfig classes via andro
 <namespace 'com.example.namespace'>를
 "android " 안에 넣으면 된다.
 
-
-
-
 ---------------------------------------------------
 
 This Android Gradle plugin (7.2.0) was tested up to compileSdk = 32
@@ -68,4 +78,67 @@ id 'com.android.application' version '7.2.2' apply false
  '7.2.2'를 변경해주면 된다.
 
 
+--------------------------------------------------------
 
+Could not resolve all files for configuration ':app:debugRuntimeClasspath'
+
+이러한 문제는 
+
+allprojects {
+    repositories {
+        google()
+        mavenCentral()
+        maven {
+            url "https://jitpack.io"
+        }
+        maven {
+            url 'https://maven.google.com/'
+        }
+    }
+}
+
+"settingsTemplate"파일 안의 순서를 
+
+allprojects {
+    repositories {
+        google()
+        maven {
+            url "https://jitpack.io"
+        }
+        maven {
+            url 'https://maven.google.com/'
+        }
+        mavenCentral()
+    }
+}
+
+이런 식으로 "mavenCentral()"를 뒤로 미루면 된다.
+
+
+---------------------------------------------------------------------------
+
+Resource 'style/BaseUnityGameActivityTheme' not found in AndroidManifest.xml:128
+
+이러한 문제는 
+
+"AndroidManifest"의 해당 문구를 
+
+지워주면 된다.
+
+수정 전 : 
+<activity android:name="com.unity3d.player.UnityPlayerGameActivity"
+          android:theme="@style/BaseUnityGameActivityTheme">
+
+수정 후 
+<activity android:name="com.unity3d.player.UnityPlayerGameActivity">
+
+
+-----------------------------------------------------------------------------------
+
+CommandInvokationFailure: Unable to create keystore. Please make sure the location of the keystore is valid.
+
+키스토어를 생성하려고 할때 이러한 문구가 뜨면서 안된다면
+
+ Firebase.Editor.dll 를 다른 곳에 옮겨두고 생성하면된다.
+
+물론 생성 후에 다시 제자리로 둬야한다.
