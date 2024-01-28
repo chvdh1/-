@@ -1,0 +1,64 @@
+어렵다 포톤...
+
+-----------------------------------------------------------------
+대전 게임이 끝나고 다시 로비로 돌아오고,
+다시 대전 상대를 찾기 위해 방을 생성하려고 하면
+이런 경고 창이 뜸. 
+
+JoinRoom failed.
+Client is on GameServer (must be Master Server for matchmaking) and ready.
+Wait for callback: OnJoinedLobby or OnConnectedToMaster.
+
+번역 : 
+룸 가입에 실패했습니다.
+클라이언트가 게임 서버에 있고(일치를 위해 마스터 서버여야 함) 준비가 되어 있습니다.
+콜백 대기: OnJoinedLobby 또는 OnConnectedToMaster.
+
+그러고는 대전 상대가 찾아지지도 않고, 방도 생성이 안 된다.
+
+해결방안 =
+
+로비로 돌아오면
+1. 방을 나가고,
+2. 연결을 해제하면된다.
+ private void Start()
+ {
+     Debug.Log(PhotonNetwork.IsConnected);
+     if(PhotonNetwork.InRoom)
+         PhotonNetwork.LeaveRoom();
+     if (PhotonNetwork.IsConnected)
+         Disconnet();
+ }
+
+----------------------------------------------------------------------------------------
+
+PhotonNetwork.LoadLevel("Lobby");
+이것을 방을 나간 뒤에 쓰면... 아래 오류가 생긴다.
+
+
+Operation LeaveRoom (254) not called because client is not connected or
+not ready yet, client state: Leaving
+
+유저가 방에 있을 때 씬을 이동하고,
+방을 나가자.
+
+이렇게 확인하자.
+
+ Debug.Log(PhotonNetwork.InRoom); //true 이어야만 한다...
+PhotonNetwork.LoadLevel("Lobby");
+
+---------------------------------------------------------------------------------------
+
+
+
+
+
+
+
+
+
+
+
+
+
+
